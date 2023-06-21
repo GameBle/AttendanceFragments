@@ -1,5 +1,6 @@
 package com.example.attendance
 
+
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -17,10 +18,11 @@ import com.github.mikephil.charting.highlight.Highlight
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import com.github.mikephil.charting.utils.ColorTemplate
 
-
-
 class BarGraphFragment : Fragment() {
     private lateinit var barChart: BarChart
+    private val defaultBarColor = Color.rgb(0, 128, 128) // Teal color
+    private val selectedBarColor = Color.YELLOW
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -44,11 +46,11 @@ class BarGraphFragment : Fragment() {
         val labels = listOf("label1", "label2", "label3", "label4", "label5")
 
         val barDataSet = BarDataSet(entries, "Values")
-        barDataSet.color = Color.rgb(0, 128, 128) // Set the color to teal
+        barDataSet.color = defaultBarColor
         barDataSet.valueTextSize = 14f
         barDataSet.valueTextColor = Color.GREEN
 
-        var barData = BarData(barDataSet)
+        val barData = BarData(barDataSet)
         barChart.data = barData
 
         // Configure the X-axis
@@ -70,23 +72,30 @@ class BarGraphFragment : Fragment() {
 
         barChart.setFitBars(true)
         barChart.invalidate()
+
         barChart.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
             override fun onValueSelected(e: Entry?, h: Highlight?) {
                 if (e != null) {
+                    // Reset all bars to default color
+                    barDataSet.color = defaultBarColor
+
+                    // Set the clicked bar to the selected color
+                    val selectedBarIndex = e.x.toInt()
+                    barDataSet.setColor(selectedBarIndex, selectedBarColor)
+                    barChart.data.notifyDataChanged()
+                    barChart.notifyDataSetChanged()
+                    barChart.invalidate()
+
                     val calendarFragment = CalendarFragment()
-                    val fragmentTransaction =
-                        requireActivity().supportFragmentManager.beginTransaction()
+                    val fragmentTransaction = requireActivity().supportFragmentManager.beginTransaction()
                     fragmentTransaction.replace(R.id.fragment_container, calendarFragment)
                     fragmentTransaction.commit()
                 }
             }
+
             override fun onNothingSelected() {
                 // Handle the case when no bar is selected
             }
         })
     }
 }
-
-
-
-
